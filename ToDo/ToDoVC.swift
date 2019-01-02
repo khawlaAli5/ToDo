@@ -11,7 +11,7 @@ import UIKit
 class ToDoVC: UITableViewController {
 
     //Declare Virabels
-    let itemArray = ["Buy Egg","Get Milk","Call Police"]
+    var itemArray = ["Buy Egg","Get Milk","Call Police"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,9 +62,38 @@ class ToDoVC: UITableViewController {
 
     }
    
-
+//MARK -- ADD new items
     
-   
+    
+    @IBAction func AddButtonPressed(_ sender: UIBarButtonItem) {
+        
+        let alerti = UIAlertController(title: "Add New ToDo Item", message: " ", preferredStyle:.alert)
+        var textF = UITextField()
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            //what will happen when the user clicks on add on ur UIAlert
+            print("Sucsess")
+           
+        //Add the new Item to the array
+                self.itemArray.append(textF.text!)
+            
+            //We have to reload data so that it can show in the cell
+            self.tableView.reloadData()
+            //print(self.itemArray)
+          
+        }
+        
+        alerti.addAction(action)
+     //create a text felid inside the alter
+        alerti.addTextField { (addTextF) in
+            addTextF.placeholder = "Create New Item"
+            textF = addTextF
+        }
+        
+        //present the alert
+        present(alerti, animated: true, completion: nil)
+        
+    }
+    
 
 }
 
