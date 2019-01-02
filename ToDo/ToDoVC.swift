@@ -13,9 +13,18 @@ class ToDoVC: UITableViewController {
     //Declare Virabels
     var itemArray = ["Buy Egg","Get Milk","Call Police"]
     
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        //we Have to call the array that we created in the defult in the startUp
+        
+        if let items = UserDefaults.standard.array(forKey: "TodoListArray") as? [String]{
+            itemArray = items
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -75,6 +84,8 @@ class ToDoVC: UITableViewController {
            
         //Add the new Item to the array
                 self.itemArray.append(textF.text!)
+            //
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
             //We have to reload data so that it can show in the cell
             self.tableView.reloadData()
