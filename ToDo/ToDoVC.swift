@@ -11,28 +11,17 @@ import UIKit
 class ToDoVC: UITableViewController {
 
     //Declare Virabels
-  //  var itemArray = ["Buy Egg","Get Milk","Call Police"]
     //instide of using hard coded array we use this
     var itemArray = [Item]()
-    
-    let defaults = UserDefaults.standard
-    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+
     override func viewDidLoad() {
         super.viewDidLoad()
+  print(dataFilePath)
+        
+        loadItems()
+        
         // Do any additional setup after loading the view, typically from a nib.
-        let newItem = Item()
-        newItem.title = "FindeMike"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Dragon"
-           itemArray.append(newItem2)
-
-        //we Have to call the array that we created in the defult in the startUp
-        if let items = UserDefaults.standard.array(forKey: "TodoListArray") as? [Item]{
-            itemArray = items
-        }
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -66,29 +55,16 @@ class ToDoVC: UITableViewController {
         
        
        
-        //add a cheak mark but if already have a chek mark it will go
-    
+        //--add a cheak mark but if already have a chek mark it will go
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        
-    //The bellow if statment is like the one on top but longer
-//       if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark
-//       {
-//        tableView.cellForRow(at: indexPath)?.accessoryType = .none
-//
-//        }
-//        else
-//       {
-//        tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-//        }
-       
-        tableView.reloadData()
-        //for the interface
+        saveItem()
+        //--for the interface
         tableView.deselectRow(at:indexPath, animated: true)
 
     }
    
-//MARK -- ADD new items
+    //MARK:ADD new items
     
     
     @IBAction func AddButtonPressed(_ sender: UIBarButtonItem) {
@@ -99,18 +75,17 @@ class ToDoVC: UITableViewController {
             //what will happen when the user clicks on add on ur UIAlert
 let newItem = Item()
             newItem.title = textF.text!
+            
         //Add the new Item to the array
                 self.itemArray.append(newItem)
-            //
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            
-            //We have to reload data so that it can show in the cell
-            self.tableView.reloadData()
-            //print(self.itemArray)
-          
+            //call the save function
+                  self.saveItem()
         }
         
+        
         alerti.addAction(action)
+        
+    
      //create a text felid inside the alter
         alerti.addTextField { (addTextF) in
             addTextF.placeholder = "Create New Item"
@@ -120,6 +95,49 @@ let newItem = Item()
         //present the alert
         present(alerti, animated: true, completion: nil)
         
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //MARK:FUNCTIONS
+    
+    
+    func saveItem() {
+        
+        let encoder = PropertyListEncoder()
+                    do{
+                        let data = try encoder.encode(itemArray)
+                        try  data.write(to: dataFilePath!)
+                    }
+                    catch
+                    {
+                      print("Error encoding item array, \(error)")
+                    }
+        
+                    //We have to reload data so that it can show in the cell
+                    tableView.reloadData()
+        print(dataFilePath!)
+
+    }
+    
+    func loadItems(){
+        //decode to save the data so that it is never lost
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+            itemArray = try decoder.decode([Item].self, from: data)
+            }
+            catch{
+                print("Error decoding item array, \(error)")
+            }
+            
+        }
     }
     
 
