@@ -69,15 +69,6 @@ class CategoryViewController: UITableViewController {
         
     }
     
-    //To print what we have selected
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        
-       saveCategory()
-        //--for the interface
-        tableView.deselectRow(at:indexPath, animated: true)
-        
-    }
     
     
     
@@ -120,4 +111,18 @@ class CategoryViewController: UITableViewController {
   
     
     //MARK: - TableView Delegate Methods
+    //To print what we have selected
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        performSegue(withIdentifier: "GoToItem", sender: self)
+        
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! ToDoVC
+        if let indexPath = tableView.indexPathForSelectedRow {
+            destinationVC.selectedCategory = CategoryArray[indexPath.row]
+            
+        }
+    }
+    
 }

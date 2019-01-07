@@ -14,6 +14,14 @@ class ToDoVC: UITableViewController {
     //Declare Virabels
     //instide of using hard coded array we use this
     var itemArray = [Item]()
+    
+    var selectedCategory : Category?{
+        didSet{
+          //if we have a catogery we do load items
+            loadItems()
+        }
+    }
+    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
 
@@ -21,7 +29,7 @@ class ToDoVC: UITableViewController {
         super.viewDidLoad()
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        loadItems()
+    
     }
 
   
@@ -77,6 +85,7 @@ class ToDoVC: UITableViewController {
             newItem.title = textF.text!
             newItem.done = false
             
+            
         //Add the new Item to the array
                 self.itemArray.append(newItem)
             //call the save function
@@ -84,15 +93,13 @@ class ToDoVC: UITableViewController {
         }
         
         
-        alerti.addAction(action)
-        
-    
-     //create a text felid inside the alter
+        //create a text felid inside the alter
         alerti.addTextField { (addTextF) in
             addTextF.placeholder = "Create New Item"
             textF = addTextF
         }
         
+        alerti.addAction(action)
         //present the alert
         present(alerti, animated: true, completion: nil)
         
@@ -115,7 +122,15 @@ class ToDoVC: UITableViewController {
 
     }
     //= Item.fetchRequest is a defult value
-    func loadItems(with request:NSFetchRequest<Item> = Item.fetchRequest()){
+    func loadItems(with request:NSFetchRequest<Item> = Item.fetchRequest(),predicate:NSPredicate? = nil){
+        let categoryPredicate = NSPredicate(format:"parentCatogery.name MATCHES %Q",selectedCategory!.name!)
+        if let addtionalPredicate = predicate{
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredictaes: [categoryPredicate])
+        }
+        
+        let compoundPredicet = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,predicate])
+        
+        
         let request : NSFetchRequest<Item> = Item.fetchRequest()
             do{
 itemArray = try context.fetch(request)
@@ -139,9 +154,12 @@ itemArray = try context.fetch(request)
 extension ToDoVC : UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
-        request.predicate = NSPredicate(format:"title CONTAINS[cd] %@",searchBar.text!)
+        
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@",searchBar.text!)
+        
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        loadItems(with: request)
+        
+        loadItems(with: request,predicate:predicate)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {

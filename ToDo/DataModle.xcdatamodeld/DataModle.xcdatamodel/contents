@@ -8,7 +8,7 @@
         <attribute name="title" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Item" positionX="72" positionY="-16" width="128" height="73"/>
         <element name="Category" positionX="-288" positionY="-18" width="128" height="58"/>
+        <element name="Item" positionX="45" positionY="-16" width="155" height="73"/>
     </elements>
 </model>
