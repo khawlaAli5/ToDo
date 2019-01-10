@@ -8,21 +8,24 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class ToDoVC: UITableViewController {
+class ToDoVC: SwipeTableViewController {
 
     //Declare Virabels
     //instide of using hard coded array we use this
     var todoItems:Results<Item>?
+    // var CategoryArray : Results<Category>!
     //WE have to use this for Realm
     let realm = try! Realm()
     
-    
+    @IBOutlet weak var SearchBB: UISearchBar!
     
     var selectedCategory : Category?{
         didSet{
           //if we have a catogery we do load items
           loadItems()
+            
         }
     }
     
@@ -33,8 +36,40 @@ class ToDoVC: UITableViewController {
         super.viewDidLoad()
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-    
+     tableView.rowHeight = 80.0
+        tableView.separatorStyle = .none
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+             title = "\(self.selectedCategory!.name)"
+       //WE USE guard instide of If statment because we have no else return and ite better
+        guard let colourHex = selectedCategory?.color else { fatalError()}
+        UpdtaeNavBar(withHexCode: colourHex)
+            }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+      UpdtaeNavBar(withHexCode: FlatWhite().hexValue())
+    }
+    
+    //MARK: -Nav Bar Setup Methods
+    func UpdtaeNavBar(withHexCode colourHexCode :String){
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navagtion controller dose not exist")}
+        
+        
+        guard let navBarColour = UIColor(hexString: colourHexCode) else {fatalError()}
+        
+        navBar.barTintColor = navBarColour
+        
+        navBar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+        
+        SearchBB.barTintColor = navBarColour
+        
+        navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor:ContrastColorOf(navBarColour, returnFlat: true)]
+    }
+            
+    
+
 
   
     //MARK: -TableView Source Methods(2)
@@ -49,12 +84,20 @@ class ToDoVC: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //the identifier is for the cell it self
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        let Categorycolor = self.selectedCategory?.color
         
        if let item = todoItems?[indexPath.row]
        {
         cell.textLabel?.text = item.title
+        if let color = UIColor(hexString: Categorycolor!)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+            cell.backgroundColor = color
+            cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            
+        }
         
+       
+        //print(Categorycolor)
         cell.accessoryType = item.done ? .checkmark : .none
         
         }else
@@ -86,6 +129,28 @@ class ToDoVC: UITableViewController {
         tableView.deselectRow(at:indexPath, animated: true)
 
     }
+    
+    
+    //MARK:
+    //Delete Data From Swipe
+    override func updateModel(at indexPath: IndexPath) {
+        super.updateModel(at: indexPath)
+        if let ItemForDelection = self.todoItems?[indexPath.row]{
+            do{
+                try self.realm.write {
+                    self.realm.delete(ItemForDelection)
+                }
+                
+            }
+            catch
+            {
+                print("Error Deleting cell \(error)")
+            }
+            
+            
+        }
+    }
+    
    
     //MARK:ADD new items
     
@@ -105,7 +170,7 @@ class ToDoVC: UITableViewController {
                         let newItem = Item()
                         newItem.title = textF.text!
                         newItem.dateCreated = Date()
-                        print(newItem.dateCreated)
+                        
                         //newItem.done = false
                         currentCategory.items.append(newItem)
                     }
@@ -140,6 +205,7 @@ class ToDoVC: UITableViewController {
 
 
 //END of our CLASS!
+    
 }
 
 

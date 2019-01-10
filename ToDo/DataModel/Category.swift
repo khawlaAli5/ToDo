@@ -12,7 +12,7 @@ import RealmSwift
 class Category: Object {
     //we always use @objc dynamic when we declare virabels in RealmSwift
     @objc dynamic var name : String = ""
-    
+   @objc dynamic var color: String? = ""
     let items = List<Item>()
    
 }

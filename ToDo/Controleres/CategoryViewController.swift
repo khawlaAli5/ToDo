@@ -8,8 +8,9 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 //Init RAM
     let realm = try! Realm()
     //Declare Virabels
@@ -21,6 +22,11 @@ class CategoryViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategorys()
+         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        tableView.rowHeight = 80.0
+        
+        //remove sepretore between cells
+        tableView.separatorStyle = .none
     }
     //MARK: - TableView Datasource
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -29,12 +35,27 @@ class CategoryViewController: UITableViewController {
     }
     
     
+
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //the identifier is for the cell it self
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        //Call The cell from the swipeTableView Class
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
+        if let category = CategoryArray?[indexPath.row]{
+            cell.textLabel?.text = category.name
+            guard let categoryColour = UIColor(hexString: category.color!) else {fatalError()}
+            
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
+        }
       
-        cell.textLabel?.text = CategoryArray?[indexPath.row].name ?? "NO categories Added yet"
+    
+        
+       
+        
+        
+       
         
         return cell
         
@@ -58,8 +79,25 @@ class CategoryViewController: UITableViewController {
         
     }
     
-    
-    //= Item.fetchRequest is a defult value
+    //Delete Data From Swipe
+    override func updateModel(at indexPath: IndexPath) {
+        super.updateModel(at: indexPath)
+                        if let categoryForDeletion = self.CategoryArray?[indexPath.row]{
+                            do{
+                                try self.realm.write {
+                                    self.realm.delete(categoryForDeletion)
+                                }
+        
+                            }
+                            catch
+                            {
+                                print("Error Deleting cell \(error)")
+                            }
+        
+        
+                        }
+    }
+
     func loadCategorys(){
         
          CategoryArray = realm.objects(Category.self)
@@ -81,7 +119,7 @@ class CategoryViewController: UITableViewController {
             
             let newCatogery = Category()
             newCatogery.name = textF.text!
-            
+            newCatogery.color = UIColor.init(randomFlatColorOf: UIShadeStyle.dark).hexValue()
             //NO NEED FOR APEENDED becuase its auto update
             //call the save function
             self.save(category: newCatogery)
@@ -123,4 +161,5 @@ class CategoryViewController: UITableViewController {
         }
     }
     
-}
+}//END
+
